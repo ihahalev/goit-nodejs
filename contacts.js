@@ -16,22 +16,23 @@ async function getContactById(contactId) {
 async function removeContact(contactId) {
   const data = await listContacts();
   const contacts = data.filter(({ id }) => id !== contactId);
-  const res = await fs.promises.writeFile(
-    contactsPath,
-    JSON.stringify(contacts),
-  );
-  console.log(res);
-  // listContacts().then((data) => {
+  await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
+  return contacts;
+  // return listContacts().then((data) => {
   //   const contacts = data.filter(({ id }) => id !== contactId);
-  //   // console.log(JSON.stringify(contacts));
-  //   fs.promises
+  //   return fs.promises
   //     .writeFile(contactsPath, JSON.stringify(contacts))
-  //     .then(() => console.log(contacts));
+  //     .then(() => contacts);
   // });
 }
 
-function addContact(name, email, phone) {
-  // ...твой код
+async function addContact(name, email, phone) {
+  const data = await listContacts();
+  const maxId =
+    data.reduce((maxCurrent, { id }) => Math.max(maxCurrent, id), 0) + 1;
+  const contacts = [...data, { id: maxId, name, email, phone }];
+  await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
+  return contacts;
 }
 
 module.exports = {
