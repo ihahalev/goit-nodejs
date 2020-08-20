@@ -1,0 +1,32 @@
+{
+  "name": "goit-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "nodemonConfig": {
+    "ignore": [
+      "db/*"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ihahalev/goit-nodejs.git"
+  },
+  "author": "Ivan Hahalev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ihahalev/goit-nodejs/issues"
+  },
+  "homepage": "https://github.com/ihahalev/goit-nodejs#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "yargs": "^15.4.1"
+  }
+}
