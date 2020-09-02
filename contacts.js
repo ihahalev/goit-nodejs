@@ -15,9 +15,11 @@ async function getContactById(contactId) {
 
 async function removeContact(contactId) {
   const data = await listContacts();
-  const contacts = data.filter(({ id }) => id !== contactId);
-  await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
-  return contacts;
+  if (await getContactById(contactId)) {
+    const contacts = data.filter(({ id }) => id !== contactId);
+    await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
+    return true;
+  }
   // return listContacts().then((data) => {
   //   const contacts = data.filter(({ id }) => id !== contactId);
   //   return fs.promises
@@ -32,7 +34,18 @@ async function addContact(name, email, phone) {
     data.reduce((maxCurrent, { id }) => Math.max(maxCurrent, id), 0) + 1;
   const contacts = [...data, { id: maxId, name, email, phone }];
   await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
-  return contacts;
+  return { id: maxId, name, email, phone };
+}
+
+async function updateContact(contactId, updateData) {
+  const contact = await getContactById(contactId);
+  if (!contact) {
+    return;
+  }
+  const data = await listContacts();
+  const contacts = [...data, { ...contact, ...updateData }];
+  await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
+  return { ...contact, ...updateData };
 }
 
 module.exports = {
@@ -40,4 +53,5 @@ module.exports = {
   getContactById,
   removeContact,
   addContact,
+  updateContact,
 };
