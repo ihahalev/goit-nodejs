@@ -43,7 +43,12 @@ async function updateContact(contactId, updateData) {
     return;
   }
   const data = await listContacts();
-  const contacts = [...data, { ...contact, ...updateData }];
+  const contacts = data.map((contact) => {
+    if (contact.id === contactId) {
+      return { ...contact, ...updateData };
+    }
+    return contact;
+  });
   await fs.promises.writeFile(contactsPath, JSON.stringify(contacts));
   return { ...contact, ...updateData };
 }

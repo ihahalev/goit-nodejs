@@ -40,25 +40,29 @@ async function invokeAction({ action, id, name, email, phone }) {
 
 invokeAction(argv);
 
-const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
-const cors = require('cors');
-const configEnv = require('./config.env');
-const contactsRouter = require('./routers/contactsRouter');
+const ContactsFileServer = require('./contactsFileServer');
 
-const app = express();
+new ContactsFileServer().start();
 
-app.use(morgan('tiny'));
-app.use(express.json());
-app.use(cors());
+// const express = require('express');
+// const morgan = require('morgan');
+// const path = require('path');
+// const cors = require('cors');
+// const configEnv = require('./config.env');
+// const contactsRouter = require('./routers/contactsRouter');
 
-app.use('/api/contacts', contactsRouter);
+// const app = express();
 
-app.listen(configEnv.port, (err) => {
-  if (err) {
-    return console.error(err);
-  }
+// app.use(morgan('tiny'));
+// app.use(express.json());
+// app.use(cors());
 
-  console.info('server started at port', configEnv.port);
-});
+// app.use('/api/contacts', contactsRouter);
+
+// app.listen(configEnv.port, (err) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+
+//   console.info('server started at port', configEnv.port);
+// });
