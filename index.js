@@ -10,7 +10,6 @@ const fnContacts = require('./contacts');
 
 const argv = require('yargs').argv;
 
-// TODO: рефакторить
 async function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
     case 'list':
@@ -40,29 +39,6 @@ async function invokeAction({ action, id, name, email, phone }) {
 
 invokeAction(argv);
 
-const ContactsFileServer = require('./contactsFileServer');
+const ContactsServer = require('./contactsServer');
 
-new ContactsFileServer().start();
-
-// const express = require('express');
-// const morgan = require('morgan');
-// const path = require('path');
-// const cors = require('cors');
-// const configEnv = require('./config.env');
-// const contactsRouter = require('./routers/contactsRouter');
-
-// const app = express();
-
-// app.use(morgan('tiny'));
-// app.use(express.json());
-// app.use(cors());
-
-// app.use('/api/contacts', contactsRouter);
-
-// app.listen(configEnv.port, (err) => {
-//   if (err) {
-//     return console.error(err);
-//   }
-
-//   console.info('server started at port', configEnv.port);
-// });
+new ContactsServer().start().catch(console.error);

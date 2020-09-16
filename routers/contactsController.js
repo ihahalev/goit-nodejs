@@ -1,17 +1,27 @@
 const Joi = require('joi');
 const responseNormalizer = require('../normalizers/response-normalizer');
-const fnContacts = require('../contacts');
+// const fnContacts = require('../contacts');
+const configEnv = require('../config.env');
+const mongodb = require('mongodb');
+const connection = require('../database/Connection');
 
 class ContactController {
   async getContacts(req, res) {
-    const list = await fnContacts.listContacts();
+    const { limit = 100 } = req.query;
+    const collection = connection.getCollection();
+    const list = await collection
+      .find({})
+      .sort({ name: 1 })
+      .limit(limit)
+      .toArray(); //fnContacts.listContacts();
     return res.status(200).send(responseNormalizer(list));
   }
 
   async getContactById(req, res) {
-    const contactById = await fnContacts.getContactById(
-      parseInt(req.params.contactId),
-    );
+    const collection = connection.getCollection();
+    const contactById = await collection.findOne(
+      mongodb.ObjectID(req.params.contactId),
+    ); // fnContacts.getContactById(parseInt(req.params.contactId));
     if (contactById) {
       return res.status(200).send(responseNormalizer(contactById));
     } else {
@@ -23,14 +33,16 @@ class ContactController {
 
   async createContact(req, res) {
     const { name, email, phone } = req.body;
-    const contactAdded = await fnContacts.addContact(name, email, phone);
+    const collection = connection.getCollection();
+    const contactAdded = await collection.insertOne({ name, email, phone }); // fnContacts.addContact(name, email, phone);
     return res.status(201).send(responseNormalizer(contactAdded));
   }
 
   async deleteContact(req, res) {
-    const contactRemoved = await fnContacts.removeContact(
-      parseInt(req.params.contactId),
-    );
+    const collection = connection.getCollection();
+    const contactRemoved = await collection.deleteOne({
+      _id: mongodb.ObjectID(req.params.contactId),
+    }); //fnContacts.removeContact(parseInt(req.params.contactId));
     if (contactRemoved) {
       const success = { message: 'contact deleted' };
       return res.status(200).send(responseNormalizer(success));
@@ -42,10 +54,11 @@ class ContactController {
   }
 
   async updateContact(req, res) {
-    const contactUpdated = await fnContacts.updateContact(
-      parseInt(req.params.contactId),
-      req.body,
-    );
+    const collection = connection.getCollection();
+    const contactUpdated = await collection.updateOne(
+      { _id: mongodb.ObjectID(req.params.contactId) },
+      { $set: req.body },
+    ); //fnContacts.updateContact(parseInt(req.params.contactId), req.body);
     if (contactUpdated) {
       return res.status(200).send(responseNormalizer(contactUpdated));
     } else {
@@ -55,11 +68,11 @@ class ContactController {
   }
 
   async validateCreateContact(req, res, next) {
-    const error = Joi.object({
+    const error = await Joi.object({
       name: Joi.string().min(3).required(),
       email: Joi.string().min(5).required(),
       phone: Joi.string().min(5).required(),
-    }).validate(req.body);
+    }).validateAsync(req.body);
     if (error.error) {
       error.error.message = 'missing required name field';
       return res.status(400).send(responseNormalizer(error.error));
@@ -73,11 +86,11 @@ class ContactController {
       err.message = 'missing fields';
       return res.status(400).send(responseNormalizer(err));
     }
-    const error = Joi.object({
+    const error = await Joi.object({
       name: Joi.string().min(3),
       email: Joi.string().min(5),
       phone: Joi.string().min(5),
-    }).validate(req.body);
+    }).validateAsync(req.body);
     if (error.error) {
       error.error.message = 'fields incorrect';
       return res.status(400).send(responseNormalizer(error.error));
