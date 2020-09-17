@@ -1,20 +1,25 @@
 const express = require('express');
 const morgan = require('morgan');
-const path = require('path');
 const cors = require('cors');
 const configEnv = require('./config.env');
 const contactsRouter = require('./routers/contactsRouter');
 
-module.exports = class UsersServer {
+const connection = require('./database/Connection');
+
+module.exports = class ContactsServer {
   constructor() {
     this.server = null;
   }
 
-  start() {
+  async start() {
+    await connection.connect();
     this.initServer();
     this.initMiddlewares();
     this.initRoutes();
     this.startListening();
+    process.on('SIGILL', () => {
+      connection.close();
+    });
   }
 
   initServer() {

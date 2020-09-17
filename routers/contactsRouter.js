@@ -7,18 +7,10 @@ router.get('/', errorWrapper(contastsController.getContacts));
 
 router.get('/:contactId', errorWrapper(contastsController.getContactById));
 
-router.post(
-  '/',
-  contastsController.validateCreateContact,
-  errorWrapper(contastsController.createContact),
-);
+router.post('/', errorWrapper(contastsController.createContact));
 
 router.delete('/:contactId', errorWrapper(contastsController.deleteContact));
 
-router.patch(
-  '/:contactId',
-  contastsController.validateUpdateContact,
-  errorWrapper(contastsController.updateContact),
-);
+router.patch('/:contactId', errorWrapper(contastsController.updateContact));
 
 module.exports = router;
