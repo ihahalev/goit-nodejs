@@ -1,5 +1,4 @@
-const mongodb = require('mongodb');
-
+const mongoose = require('mongoose');
 const configEnv = require('../config.env');
 
 class Connection {
@@ -11,16 +10,26 @@ class Connection {
     return this.database.collection(configEnv.dbCollection);
   }
   async connect() {
-    const { MongoClient } = mongodb;
-    this.connection = await MongoClient.connect(configEnv.dbConnectionUrl, {
-      useUnifiedTopology: true,
+    const connectionStatePromise = new Promise((reslove, reject) => {
+      mongoose.connection.on('error', (e) => {
+        console.log('Database connection failed');
+        process.exit(1);
+      });
+      mongoose.connection.on('open', () => {
+        console.log('Database connection successful');
+        reslove();
+      });
     });
-    this.database = this.connection.db(configEnv.dbName);
-    console.log('Database connection successful');
+    await mongoose.connect(`${configEnv.dbConnectionUrl}/${configEnv.dbName}`, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+    });
+    return connectionStatePromise;
   }
 
   async close() {
-    this.connection.close();
+    mongoose.connection.close();
   }
 }
 

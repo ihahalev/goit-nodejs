@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-const path = require('path');
 const cors = require('cors');
 const configEnv = require('./config.env');
 const contactsRouter = require('./routers/contactsRouter');

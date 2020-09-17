@@ -33,6 +33,7 @@
     "joi": "^17.2.1",
     "mogoose": "0.0.1-security",
     "mongodb": "^3.6.2",
+    "mongoose": "^5.10.5",
     "morgan": "^1.10.0",
     "yargs": "^15.4.1"
   }
