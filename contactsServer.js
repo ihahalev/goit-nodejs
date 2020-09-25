@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const configEnv = require('./config.env');
 const contactsRouter = require('./routers/contactsRouter');
+const usersRouter = require('./routers/usersRouter');
 
 const connection = require('./database/Connection');
 
@@ -34,6 +35,7 @@ module.exports = class ContactsServer {
 
   initRoutes() {
     this.server.use('/api/contacts', contactsRouter);
+    this.server.use('/api/users', usersRouter);
   }
 
   startListening() {
