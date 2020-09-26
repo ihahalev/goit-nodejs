@@ -5,6 +5,8 @@ const usersController = require('./usersController');
 
 router.post('/auth/register', errorWrapper(usersController.createUser));
 
+router.post('/auth/login', errorWrapper(usersController.loginUser));
+
 // router.get('/', errorWrapper(contastsController.getContacts));
 
 // router.get('/:contactId', errorWrapper(contastsController.getContactById));

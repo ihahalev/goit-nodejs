@@ -37,6 +37,7 @@
     "mongodb": "^3.6.2",
     "mongoose": "^5.10.5",
     "morgan": "^1.10.0",
+    "password-hash": "^1.2.2",
     "yargs": "^15.4.1"
   }
 }
