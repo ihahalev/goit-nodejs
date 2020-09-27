@@ -20,6 +20,12 @@ router.get(
   errorWrapper(usersController.currentUser),
 );
 
+router.patch(
+  '/',
+  errorWrapper(authCheck),
+  errorWrapper(usersController.updateSubscription),
+);
+
 // router.get('/', errorWrapper(contastsController.getContacts));
 
 // router.get('/:contactId', errorWrapper(contastsController.getContactById));

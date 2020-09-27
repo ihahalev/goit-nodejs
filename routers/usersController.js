@@ -9,12 +9,18 @@ class UserController {
       email: Joi.string().email().required(),
       password: Joi.string().min(3).required(),
     });
+    this.validSubscription = Joi.object({
+      subscription: Joi.string().valid('free', 'pro', 'premium'),
+    });
   }
   get createUser() {
     return this._createUser.bind(this);
   }
   get loginUser() {
     return this._loginUser.bind(this);
+  }
+  get updateSubscription() {
+    return this._updateSubscription.bind(this);
   }
 
   async _createUser(req, res) {
@@ -90,6 +96,25 @@ class UserController {
       subscription: user.subscription,
     };
     return res.status(200).send(responseNormalizer(userRes));
+  }
+
+  async _updateSubscription(req, res) {
+    validate(this.validSubscription, req.body);
+    const { subscription } = req.body;
+    const { _id } = req.user;
+    const user = await UserModel.findById(_id);
+    if (!user) {
+      throw new ApiError(401, 'Unauthorized', {
+        message: 'Not authorized',
+      });
+    }
+    await user.updateSub(subscription);
+    res.status(205).send(
+      responseNormalizer({
+        email: user.email,
+        subscription,
+      }),
+    );
   }
 }
 

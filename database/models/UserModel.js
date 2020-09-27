@@ -60,6 +60,16 @@ UserSchema.method('deleteToken', async function () {
   return;
 });
 
+UserSchema.method('updateSub', async function (subscription) {
+  // await this.constructor.updateToken(this._id, null);
+  await this.constructor.findByIdAndUpdate(
+    this._id,
+    { subscription },
+    { strict: true },
+  );
+  return;
+});
+
 UserSchema.pre('save', function () {
   if (this.isNew) {
     this.password = this.constructor.hashPasssword(this.password);
