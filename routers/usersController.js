@@ -1,13 +1,10 @@
 const Joi = require('joi');
-// const bcrypt = require('bcryptjs');
-const passHash = require('password-hash');
 const { validate, ApiError } = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
 
 class UserController {
   constructor() {
-    // this._saltRounds = 4;
     this.validUserObject = Joi.object({
       email: Joi.string().email().required(),
       password: Joi.string().min(3).required(),
@@ -44,26 +41,39 @@ class UserController {
   async _loginUser(req, res) {
     validate(this.validUserObject, req.body);
     const { email, password } = req.body;
+
     const user = await UserModel.findOne({ email });
     if (!user) {
-      console.log('email');
       throw new ApiError(401, 'Unauthorized', {
         message: 'Email or password is wrong',
       });
     }
-    console.log(UserModel.hashPasssword(password));
+
     const isValid = user.isPasswordValid(password);
     if (!isValid) {
-      console.log('pass');
       throw new ApiError(401, 'Unauthorized', {
         message: 'Email or password is wrong',
       });
     }
     const token = await user.generateAndSaveToken();
-    res.status(200).send({
-      token,
-      user: { email: user.email, subscription: user.subscription },
-    });
+    res.status(200).send(
+      responseNormalizer({
+        token,
+        user: { email: user.email, subscription: user.subscription },
+      }),
+    );
+  }
+
+  async logoutUser(req, res) {
+    const { _id } = req.user;
+    const user = await UserModel.findById(_id);
+    if (!user) {
+      throw new ApiError(401, 'Unauthorized', {
+        message: 'Not authorized',
+      });
+    }
+    await user.deleteToken(_id);
+    return res.status(204).send();
   }
 }
 

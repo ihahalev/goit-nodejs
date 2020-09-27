@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-// const passHash = require('password-hash');
 const joi = require('joi');
 const jwt = require('jsonwebtoken');
 const configEnv = require('../../config.env');
@@ -25,24 +24,40 @@ const UserSchema = new mongoose.Schema({
   token: String,
 });
 
-UserSchema.static.saltRounds = 4;
+// UserSchema.static.saltRounds = 4;
 
 UserSchema.static('hashPasssword', (password) => {
-  return bcrypt.hash(password, 4); //, this.constructor.saltRounds);
-  // return passHash.generate(password);
+  return bcrypt.hash(password, 4);
 });
+
+// UserSchema.static('updateToken', async function (_id, token) {
+//   await this.constructor.findByIdAndUpdate(_id, { token }, { strict: true });
+// });
 
 UserSchema.method('isPasswordValid', function (password) {
   return bcrypt.compare(password, this.password);
-  // return passHash.verify(password, this.password);
 });
 
 UserSchema.method('generateAndSaveToken', async function () {
-  const token = jwt.sign({ id: this._id }, configEnv.jwtPrivateKey);
+  const newToken = jwt.sign({ id: this._id }, configEnv.jwtPrivateKey);
 
-  this.constructor.findByIdAndUpdate(this._id, { token }, { strict: true });
+  // await this.constructor.updateToken(this._id, newToken);
+  await this.constructor.findByIdAndUpdate(
+    this._id,
+    { token: newToken },
+    { strict: true },
+  );
+  return newToken;
+});
 
-  return token;
+UserSchema.method('deleteToken', async function () {
+  // await this.constructor.updateToken(this._id, null);
+  await this.constructor.findByIdAndUpdate(
+    this._id,
+    { token: null },
+    { strict: true },
+  );
+  return;
 });
 
 UserSchema.pre('save', function () {
