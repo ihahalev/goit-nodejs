@@ -4,8 +4,15 @@ const ContactModel = require('../database/models/ContactModel');
 
 class ContactController {
   async getContacts(req, res) {
-    const { limit = 100 } = req.query;
-    const list = await ContactModel.find({}).sort({ name: 1 }).limit(limit);
+    const { limit = 20, page = 0, sub } = req.query;
+    let filters = {};
+    if (sub) {
+      filters.subscription = sub;
+    }
+    const list = await ContactModel.find(filters)
+      .sort({ name: 1 })
+      .skip(Number.parseInt(limit) * Number.parseInt(page))
+      .limit(Number.parseInt(limit));
     return res.status(200).send(responseNormalizer(list));
   }
 
