@@ -14,6 +14,12 @@ router.post(
   errorWrapper(usersController.logoutUser),
 );
 
+router.get(
+  '/current',
+  errorWrapper(authCheck),
+  errorWrapper(usersController.currentUser),
+);
+
 // router.get('/', errorWrapper(contastsController.getContacts));
 
 // router.get('/:contactId', errorWrapper(contastsController.getContactById));

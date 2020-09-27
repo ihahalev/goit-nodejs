@@ -75,6 +75,22 @@ class UserController {
     await user.deleteToken(_id);
     return res.status(204).send();
   }
+
+  async currentUser(req, res) {
+    const { _id } = req.user;
+    const user = await UserModel.findById(_id);
+    if (!user) {
+      throw new ApiError(401, 'Unauthorized', {
+        message: 'Not authorized',
+      });
+    }
+
+    const userRes = {
+      email: user.email,
+      subscription: user.subscription,
+    };
+    return res.status(200).send(responseNormalizer(userRes));
+  }
 }
 
 module.exports = new UserController();
