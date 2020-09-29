@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { errorWrapper } = require('../helpers');
+
+const { errorWrapper, multer, minifyImg } = require('../helpers');
 const usersController = require('./usersController');
 const authCheck = require('../middlewares/auth-check');
 
@@ -24,6 +25,14 @@ router.patch(
   '/',
   errorWrapper(authCheck),
   errorWrapper(usersController.updateSubscription),
+);
+
+router.patch(
+  '/avatars',
+  errorWrapper(authCheck),
+  multer.single('avatar'),
+  // minifyImg,
+  errorWrapper(usersController.updateUser),
 );
 
 // router.get('/', errorWrapper(contastsController.getContacts));
