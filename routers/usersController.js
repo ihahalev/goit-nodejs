@@ -2,6 +2,11 @@ const Joi = require('joi');
 const { validate, ApiError } = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
+const uuid = require('uuid').v4;
+const path = require('path');
+// const imgGen = require('js-image-generator');
+const jdenticon = require('jdenticon');
+const { promises: fsPromises } = require('fs');
 
 class UserController {
   constructor() {
@@ -32,10 +37,25 @@ class UserController {
         message: 'Email in use',
       });
     }
+
+    const value = email;
+    const size = 200;
+
+    const png = jdenticon.toPng(value, size);
+    const firstAva = path.join(
+      __dirname.replace('routers', ''),
+      'tmp',
+      `${uuid()}.png`,
+    );
+    // imgGen.generateImage(100, 100, 30, function (err, image) {
+    // fs.writeFileSync(firstAva, image.data);
+    // });
+    await fsPromises.writeFile(firstAva, png);
     const passwordHash = await UserModel.hashPasssword(password);
     const userAdded = await UserModel.create({
       email,
       password: passwordHash,
+      avatarURL: firstAva,
     });
     const userRes = {
       email: userAdded.email,

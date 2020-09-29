@@ -16,6 +16,7 @@ const UserSchema = new mongoose.Schema({
     },
   },
   password: String,
+  avatarURL: String,
   subscription: {
     type: String,
     enum: ['free', 'pro', 'premium'],
