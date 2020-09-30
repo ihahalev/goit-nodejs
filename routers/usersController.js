@@ -1,7 +1,15 @@
 const Joi = require('joi');
-const { validate, ApiError } = require('../helpers');
+
+const {
+  validate,
+  ApiError,
+  avaGenerate,
+  minifyImg,
+  fileMove,
+} = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
+const configEnv = require('../config.env');
 
 class UserController {
   constructor() {
@@ -10,6 +18,11 @@ class UserController {
       password: Joi.string().min(3).required(),
     });
     this.validSubscription = Joi.object({
+      subscription: Joi.string().valid('free', 'pro', 'premium'),
+    });
+    this.validUserUpdate = Joi.object({
+      email: Joi.string().email(),
+      password: Joi.string().min(3),
       subscription: Joi.string().valid('free', 'pro', 'premium'),
     });
   }
@@ -22,6 +35,9 @@ class UserController {
   get updateSubscription() {
     return this._updateSubscription.bind(this);
   }
+  // get updateUser() {
+  //   return this._updateUser.bind(this);
+  // }
 
   async _createUser(req, res) {
     validate(this.validUserObject, req.body);
@@ -32,14 +48,18 @@ class UserController {
         message: 'Email in use',
       });
     }
+    const { firstAva, avaDest } = await avaGenerate(email);
     const passwordHash = await UserModel.hashPasssword(password);
     const userAdded = await UserModel.create({
       email,
       password: passwordHash,
+      avatarURL: `${configEnv.srvUrl}:${configEnv.port}/images/${firstAva}`,
+      avatarPath: avaDest,
     });
     const userRes = {
       email: userAdded.email,
       subscription: userAdded.subscription,
+      avatarURL: userAdded.avatarURL,
     };
     return res.status(201).send(responseNormalizer(userRes));
   }
@@ -65,7 +85,11 @@ class UserController {
     res.status(200).send(
       responseNormalizer({
         token,
-        user: { email: user.email, subscription: user.subscription },
+        user: {
+          email: user.email,
+          subscription: user.subscription,
+          avatarURL: user.avatarURL,
+        },
       }),
     );
   }
@@ -94,6 +118,7 @@ class UserController {
     const userRes = {
       email: user.email,
       subscription: user.subscription,
+      avatarURL: user.avatarURL,
     };
     return res.status(200).send(responseNormalizer(userRes));
   }
@@ -113,6 +138,29 @@ class UserController {
       responseNormalizer({
         email: user.email,
         subscription,
+        avatarURL: user.avatarURL,
+      }),
+    );
+  }
+
+  async updateUser(req, res) {
+    console.log('req.file', req.file);
+    // console.log('req.body', req.body);
+    await minifyImg(req.file.path);
+    // await fileMove(req.file.path, configEnv.paths.avatars);
+    // validate(this.validUserUpdate, req.body);
+    const { subscription } = req.body;
+    // const { _id } = req.user;
+    // const user = await UserModel.findById(_id);
+    // if (!user) {
+    //   throw new ApiError(401, 'Unauthorized', {
+    //     message: 'Not authorized',
+    //   });
+    // }
+    // await user.updateSub(subscription);
+    res.status(200).send(
+      responseNormalizer({
+        // avatarURL: user.avatarURL,
       }),
     );
   }
