@@ -1,12 +1,7 @@
 const Joi = require('joi');
+const path = require('path');
 
-const {
-  validate,
-  ApiError,
-  avaGenerate,
-  minifyImg,
-  fileMove,
-} = require('../helpers');
+const { validate, ApiError, avaGenerate, minifyImg } = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
 const configEnv = require('../config.env');
@@ -35,9 +30,9 @@ class UserController {
   get updateSubscription() {
     return this._updateSubscription.bind(this);
   }
-  // get updateUser() {
-  //   return this._updateUser.bind(this);
-  // }
+  get updateUser() {
+    return this._updateUser.bind(this);
+  }
 
   async _createUser(req, res) {
     validate(this.validUserObject, req.body);
@@ -53,7 +48,7 @@ class UserController {
     const userAdded = await UserModel.create({
       email,
       password: passwordHash,
-      avatarURL: `${configEnv.srvUrl}:${configEnv.port}/images/${firstAva}`,
+      avatarURL: `${configEnv.imgUrl}${firstAva}`,
       avatarPath: avaDest,
     });
     const userRes = {
@@ -143,26 +138,34 @@ class UserController {
     );
   }
 
-  async updateUser(req, res) {
-    console.log('req.file', req.file);
-    // console.log('req.body', req.body);
-    await minifyImg(req.file.path);
-    // await fileMove(req.file.path, configEnv.paths.avatars);
-    // validate(this.validUserUpdate, req.body);
-    const { subscription } = req.body;
-    // const { _id } = req.user;
-    // const user = await UserModel.findById(_id);
-    // if (!user) {
-    //   throw new ApiError(401, 'Unauthorized', {
-    //     message: 'Not authorized',
-    //   });
-    // }
-    // await user.updateSub(subscription);
-    res.status(200).send(
-      responseNormalizer({
-        // avatarURL: user.avatarURL,
-      }),
-    );
+  async _updateUser(req, res) {
+    const updateFields = {};
+    if (req.file && req.file.path && req.file.filename) {
+      const { filename } = req.file;
+      await minifyImg(req.file.path, filename);
+      updateFields.avatarURL = `${configEnv.imgUrl}${filename}`;
+      updateFields.avatarPath = path.join(configEnv.paths.avatars, filename);
+    }
+
+    validate(this.validUserUpdate, req.body);
+    const { email, password, subscription } = req.body;
+
+    if (email) {
+      updateFields.email = email;
+    }
+    if (subscription) {
+      updateFields.subscription = subscription;
+    }
+    if (password) {
+      const passwordHash = await UserModel.hashPasssword(password);
+      updateFields.password = passwordHash;
+    }
+
+    const { _id } = req.user;
+    const user = await UserModel.findById(_id);
+
+    const updatedUser = await user.updateUser(updateFields);
+    res.status(200).send(responseNormalizer(updateFields));
   }
 }
 

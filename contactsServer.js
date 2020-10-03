@@ -18,10 +18,11 @@ module.exports = class ContactsServer {
     this.initServer();
     this.initMiddlewares();
     this.initRoutes();
-    this.startListening();
+    const retListen = this.startListening();
     process.on('SIGILL', () => {
       connection.close();
     });
+    return retListen;
   }
 
   initServer() {
@@ -41,7 +42,7 @@ module.exports = class ContactsServer {
   }
 
   startListening() {
-    this.server.listen(configEnv.port, (err) => {
+    return this.server.listen(configEnv.port, (err) => {
       if (err) {
         return console.error(err);
       }
