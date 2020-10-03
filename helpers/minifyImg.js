@@ -1,20 +1,11 @@
-const path = require('path');
+const fs = require('fs').promises;
 const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
 const imageminPngquant = require('imagemin-pngquant');
 
-const fileMove = require('./file-move');
-const configEnv = require('../config.env');
-
-module.exports = async function (draftPath) {
-  // try {
-  const MINIFIED_DIR = configEnv.paths.avatars;
-
-  // const { filename, path: draftPath } = req.file;
-  console.log(draftPath);
-  console.log(MINIFIED_DIR);
-  const ava = await imagemin([`../tmp/*.{jpg,png}`], {
-    destination: '../public/images',
+module.exports = async function (draftPath, draftFileName) {
+  const [ava] = await imagemin([`tmp/${draftFileName}`], {
+    destination: 'public/images',
     plugins: [
       imageminJpegtran(),
       imageminPngquant({
@@ -22,18 +13,6 @@ module.exports = async function (draftPath) {
       }),
     ],
   });
-  // await fileMove(draftPath, MINIFIED_DIR);
-
-  // await fsPromises.unlink(draftPath);
-  console.log(ava);
-  // req.file = {
-  //   ...req.file,
-  //   path: path.join(MINIFIED_DIR, filename),
-  //   destination: MINIFIED_DIR,
-  // };
+  await fs.unlink(draftPath);
   return ava;
-  // next();
-  // } catch (err) {
-  //   next(err);
-  // }
 };

@@ -72,6 +72,16 @@ UserSchema.method('updateSub', async function (subscription) {
   return;
 });
 
+UserSchema.method('updateUser', async function (user) {
+  // await this.constructor.updateToken(this._id, null);
+  const updated = await this.constructor.findByIdAndUpdate(
+    this._id,
+    { ...user },
+    { strict: true },
+  );
+  return updated;
+});
+
 UserSchema.pre('save', function () {
   if (this.isNew) {
     this.password = this.constructor.hashPasssword(this.password);

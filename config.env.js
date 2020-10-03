@@ -8,9 +8,12 @@ module.exports = {
   dbCollection: process.env.DB_COLLECTION,
   jwtPrivateKey: process.env.TOKEN_PRIVATE_KEY,
   srvUrl: process.env.SRV_URL,
+  imgUrl: `${process.env.SRV_URL}:${process.env.PORT}/images/`,
 
   paths: {
     tmp: path.join(process.cwd(), 'tmp'),
     avatars: path.join(process.cwd(), 'public', 'images'),
   },
+
+  logLevel: process.env.LOG_LEVEL,
 };
