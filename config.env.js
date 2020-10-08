@@ -7,7 +7,7 @@ module.exports = {
   dbName: process.env.DB_NAME,
   dbCollection: process.env.DB_COLLECTION,
   jwtPrivateKey: process.env.TOKEN_PRIVATE_KEY,
-  srvUrl: process.env.SRV_URL,
+  srvUrl: `${process.env.SRV_URL}:${process.env.PORT}`,
   imgUrl: `${process.env.SRV_URL}:${process.env.PORT}/images/`,
 
   paths: {
@@ -16,4 +16,9 @@ module.exports = {
   },
 
   logLevel: process.env.LOG_LEVEL,
+
+  mailUser: process.env.MAIL_USER,
+  mailPass: process.env.MAIL_PASS,
+  mailSGKey: process.env.SENDGRID_API_KEY,
+  mailSGUser: process.env.MAIL_SGUSER,
 };

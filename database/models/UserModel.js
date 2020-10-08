@@ -24,6 +24,7 @@ const UserSchema = new mongoose.Schema({
     default: 'free',
   },
   token: String,
+  verificationToken: String,
 });
 
 // UserSchema.static.saltRounds = 4;
@@ -32,6 +33,21 @@ UserSchema.static('hashPasssword', (password) => {
   return bcrypt.hash(password, 4);
 });
 
+UserSchema.static('findByVerificationToken', async function (
+  verificationToken,
+) {
+  return this.findOne({
+    verificationToken,
+  });
+});
+
+UserSchema.static('verifyUserEmail', async function (userId) {
+  return this.findByIdAndUpdate(
+    userId,
+    { verificationToken: null },
+    { strict: true },
+  );
+});
 // UserSchema.static('updateToken', async function (_id, token) {
 //   await this.constructor.findByIdAndUpdate(_id, { token }, { strict: true });
 // });
@@ -82,10 +98,10 @@ UserSchema.method('updateUser', async function (user) {
   return updated;
 });
 
-UserSchema.pre('save', function () {
-  if (this.isNew) {
-    this.password = this.constructor.hashPasssword(this.password);
-  }
-});
+// UserSchema.pre('save', function () {
+//   if (this.isNew) {
+//     this.password = this.constructor.hashPasssword(this.password);
+//   }
+// });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -16,6 +16,11 @@ router.post(
 );
 
 router.get(
+  '/auth/verify/:verificationToken',
+  errorWrapper(usersController.verifyEmail),
+);
+
+router.get(
   '/current',
   errorWrapper(authCheck),
   errorWrapper(usersController.currentUser),
