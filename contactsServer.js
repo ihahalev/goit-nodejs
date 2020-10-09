@@ -1,11 +1,13 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const path = require('path');
+
 const configEnv = require('./config.env');
 const contactsRouter = require('./routers/contactsRouter');
 const usersRouter = require('./routers/usersRouter');
-const path = require('path');
 
+const { mailer } = require('./helpers');
 const connection = require('./database/Connection');
 
 module.exports = class ContactsServer {
@@ -14,6 +16,7 @@ module.exports = class ContactsServer {
   }
 
   async start() {
+    await mailer.init();
     await connection.connect();
     this.initServer();
     this.initMiddlewares();

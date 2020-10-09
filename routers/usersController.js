@@ -1,15 +1,17 @@
 const Joi = require('joi');
 const path = require('path');
-// const nodemailer = require('nodemailer');
-const sgMail = require('@sendgrid/mail');
 const uuid = require('uuid').v4;
 
-const { validate, ApiError, avaGenerate, minifyImg } = require('../helpers');
+const {
+  validate,
+  ApiError,
+  avaGenerate,
+  minifyImg,
+  mailer,
+} = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
 const configEnv = require('../config.env');
-
-sgMail.setApiKey(configEnv.mailSGKey);
 
 class UserController {
   constructor() {
@@ -25,13 +27,6 @@ class UserController {
       password: Joi.string().min(3),
       subscription: Joi.string().valid('free', 'pro', 'premium'),
     });
-    // this._transport = nodemailer.createTransport({
-    //   service: 'gmail',
-    //   auth: {
-    //     user: configEnv.mailUser,
-    //     pass: configEnv.mailPass,
-    //   },
-    // });
   }
   get createUser() {
     return this._createUser.bind(this);
@@ -56,11 +51,9 @@ class UserController {
       });
     }
 
-    const verificationToken = await this.sendVerificationEmail(email);
-
     const { firstAva, avaDest } = await avaGenerate(email);
     const passwordHash = await UserModel.hashPasssword(password);
-
+    const verificationToken = uuid();
     const userAdded = await UserModel.create({
       email,
       password: passwordHash,
@@ -73,6 +66,8 @@ class UserController {
       subscription: userAdded.subscription,
       avatarURL: userAdded.avatarURL,
     };
+
+    await this.sendVerificationEmail(email, verificationToken);
 
     return res.status(201).send(responseNormalizer(userRes));
   }
@@ -192,22 +187,13 @@ class UserController {
     res.status(200).send(responseNormalizer(updateFields));
   }
 
-  async sendVerificationEmail(email) {
-    const verificationToken = uuid();
-    // await this._transport.sendMail({
-    //   from: configEnv.mailUser,
-    //   to: email,
-    //   subject: 'Email verification',
-    //   html: `<a href='${configEnv.srvUrl}/api/users/auth/verify/${verificationToken}'>Click here</a>`,
-    // });
+  async sendVerificationEmail(email, verificationToken) {
     const msg = {
       to: email,
-      from: configEnv.mailSGUser,
       subject: 'Email verification',
       html: `<a href='${configEnv.srvUrl}/api/users/auth/verify/${verificationToken}'>Click here</a>`,
     };
-    await sgMail.send(msg);
-    return verificationToken;
+    await mailer.sendHtml(msg);
   }
 
   async verifyEmail(req, res, next) {
