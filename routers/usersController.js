@@ -1,7 +1,14 @@
 const Joi = require('joi');
 const path = require('path');
+const uuid = require('uuid').v4;
 
-const { validate, ApiError, avaGenerate, minifyImg } = require('../helpers');
+const {
+  validate,
+  ApiError,
+  avaGenerate,
+  minifyImg,
+  mailer,
+} = require('../helpers');
 const responseNormalizer = require('../normalizers/response-normalizer');
 const UserModel = require('../database/models/UserModel');
 const configEnv = require('../config.env');
@@ -43,19 +50,25 @@ class UserController {
         message: 'Email in use',
       });
     }
+
     const { firstAva, avaDest } = await avaGenerate(email);
     const passwordHash = await UserModel.hashPasssword(password);
+    const verificationToken = uuid();
     const userAdded = await UserModel.create({
       email,
       password: passwordHash,
       avatarURL: `${configEnv.imgUrl}${firstAva}`,
       avatarPath: avaDest,
+      verificationToken,
     });
     const userRes = {
       email: userAdded.email,
       subscription: userAdded.subscription,
       avatarURL: userAdded.avatarURL,
     };
+
+    await this.sendVerificationEmail(email, verificationToken);
+
     return res.status(201).send(responseNormalizer(userRes));
   }
 
@@ -67,6 +80,12 @@ class UserController {
     if (!user) {
       throw new ApiError(401, 'Unauthorized', {
         message: 'Email or password is wrong',
+      });
+    }
+
+    if (user.verificationToken) {
+      throw new ApiError(428, 'Precondition Required', {
+        message: 'Email not verified',
       });
     }
 
@@ -164,8 +183,34 @@ class UserController {
     const { _id } = req.user;
     const user = await UserModel.findById(_id);
 
-    const updatedUser = await user.updateUser(updateFields);
+    await user.updateUser(updateFields);
     res.status(200).send(responseNormalizer(updateFields));
+  }
+
+  async sendVerificationEmail(email, verificationToken) {
+    const msg = {
+      to: email,
+      subject: 'Email verification',
+      html: `<a href='${configEnv.srvUrl}/api/users/auth/verify/${verificationToken}'>Click here</a>`,
+    };
+    await mailer.sendHtml(msg);
+  }
+
+  async verifyEmail(req, res, next) {
+    const { verificationToken } = req.params;
+
+    const userToVerify = await UserModel.findByVerificationToken(
+      verificationToken,
+    );
+    if (!userToVerify) {
+      throw new ApiError(404, 'Not Found', {
+        message: 'User not found',
+      });
+    }
+
+    await UserModel.verifyUserEmail(userToVerify._id);
+
+    return res.status(200).send('User successfully verified');
   }
 }
 

@@ -6,3 +6,4 @@ exports.fileMove = require('./file-move');
 exports.avaGenerate = require('./avaGenerate');
 exports.multer = require('./multer');
 exports.minifyImg = require('./minifyImg');
+exports.mailer = require('./mailer');

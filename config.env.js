@@ -7,7 +7,7 @@ module.exports = {
   dbName: process.env.DB_NAME,
   dbCollection: process.env.DB_COLLECTION,
   jwtPrivateKey: process.env.TOKEN_PRIVATE_KEY,
-  srvUrl: process.env.SRV_URL,
+  srvUrl: `${process.env.SRV_URL}:${process.env.PORT}`,
   imgUrl: `${process.env.SRV_URL}:${process.env.PORT}/images/`,
 
   paths: {
@@ -16,4 +16,12 @@ module.exports = {
   },
 
   logLevel: process.env.LOG_LEVEL,
+
+  mail: {
+    service: 'gmail',
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  },
 };
