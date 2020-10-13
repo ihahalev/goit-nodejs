@@ -1,29 +1,17 @@
 const nodemailer = require('nodemailer');
-// const sgMail = require('@sendgrid/mail');
 const getLogger = require('./get-logger');
 const configEnv = require('../config.env');
 
 class Mailer {
   constructor() {
     this.logger = getLogger('mailer');
-    //nodemailer direct sender
     this._transport = nodemailer.createTransport(configEnv.mail);
-
-    //smtp nodemailer + sendgrid
-    // this.transporter = nodemailer.createTransport(configEnv.smtp);
   }
 
   async init() {
     this.logger.info('Creating transporter');
 
-    //nodemailer direct sender
     await this._transport;
-
-    //sendgrid API
-    // sgMail.setApiKey(configEnv.mail.SGKey);
-
-    //smtp nodemailer + sendgrid
-    // await this.transporter;
   }
 
   async sendMailFromSupport({ to, subject, text, html }) {
@@ -33,7 +21,6 @@ class Mailer {
     text && this.logger.debug('text ->', text);
     html && this.logger.debug('html ->', html);
 
-    //nodemailer direct sender
     return this._transport.sendMail({
       from: configEnv.mail.auth.user,
       to: Array.isArray(to) ? to.join(', ') : to,
@@ -41,24 +28,6 @@ class Mailer {
       text,
       html,
     });
-
-    //sendgrid API
-    // return sgMail.send({
-    //   to: Array.isArray(to) ? to.join(', ') : to,
-    //   from: configEnv.mail.SGUser,
-    //   subject,
-    //   text,
-    //   html,
-    // });
-
-    //smtp nodemailer + sendgrid
-    // return this.transporter.sendMail({
-    //   from: `"Support" <${configEnv.mail.SGUser}>`,
-    //   to: Array.isArray(to) ? to.join(', ') : to,
-    //   subject,
-    //   text,
-    //   html,
-    // });
   }
 
   async sendText({ to, subject, text }) {

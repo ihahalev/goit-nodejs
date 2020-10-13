@@ -23,17 +23,5 @@ module.exports = {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS,
     },
-    SGKey: process.env.SENDGRID_API_KEY,
-    SGUser: process.env.MAIL_SGUSER,
-  },
-
-  smtp: {
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_SECU,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
   },
 };
