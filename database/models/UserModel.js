@@ -27,6 +27,8 @@ const UserSchema = new mongoose.Schema({
   verificationToken: String,
 });
 
+// UserSchema.static.saltRounds = 4;
+
 UserSchema.static('hashPasssword', (password) => {
   return bcrypt.hash(password, 4);
 });
@@ -46,6 +48,9 @@ UserSchema.static('verifyUserEmail', async function (userId) {
     { strict: true },
   );
 });
+// UserSchema.static('updateToken', async function (_id, token) {
+//   await this.constructor.findByIdAndUpdate(_id, { token }, { strict: true });
+// });
 
 UserSchema.method('isPasswordValid', function (password) {
   return bcrypt.compare(password, this.password);
@@ -54,6 +59,7 @@ UserSchema.method('isPasswordValid', function (password) {
 UserSchema.method('generateAndSaveToken', async function () {
   const newToken = jwt.sign({ id: this._id }, configEnv.jwtPrivateKey);
 
+  // await this.constructor.updateToken(this._id, newToken);
   await this.constructor.findByIdAndUpdate(
     this._id,
     { token: newToken },
@@ -63,6 +69,7 @@ UserSchema.method('generateAndSaveToken', async function () {
 });
 
 UserSchema.method('deleteToken', async function () {
+  // await this.constructor.updateToken(this._id, null);
   await this.constructor.findByIdAndUpdate(
     this._id,
     { token: null },
@@ -72,6 +79,7 @@ UserSchema.method('deleteToken', async function () {
 });
 
 UserSchema.method('updateSub', async function (subscription) {
+  // await this.constructor.updateToken(this._id, null);
   await this.constructor.findByIdAndUpdate(
     this._id,
     { subscription },
@@ -81,6 +89,7 @@ UserSchema.method('updateSub', async function (subscription) {
 });
 
 UserSchema.method('updateUser', async function (user) {
+  // await this.constructor.updateToken(this._id, null);
   const updated = await this.constructor.findByIdAndUpdate(
     this._id,
     { ...user },
@@ -88,5 +97,11 @@ UserSchema.method('updateUser', async function (user) {
   );
   return updated;
 });
+
+// UserSchema.pre('save', function () {
+//   if (this.isNew) {
+//     this.password = this.constructor.hashPasssword(this.password);
+//   }
+// });
 
 module.exports = mongoose.model('User', UserSchema);
